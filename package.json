@@ -1,0 +1,23 @@
+{
+  "name": "chromium-agent-archive",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "tsx main.ts",
+    "dev": "tsx watch main.ts",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.22.0",
+    "dotenv": "^17.2.3",
+    "openai": "^6.9.1",
+    "selenium-webdriver": "^4.27.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.3"
+  }
+}
