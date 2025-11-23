@@ -9,6 +9,8 @@
 - **插件化扩展**: 灵活的功能扩展机制
 - **配置驱动**: 集中化的配置管理系统
 - **日志追踪**: 完整的操作日志和调试支持
+- **工作流控制**: 智能的插件执行顺序和失败处理机制
+- **MCP 集成**: 支持 Model Context Protocol 协议
 
 ## 📚 文档导航
 
@@ -43,18 +45,28 @@
    # 编辑 .env 文件，添加你的 API 密钥
    ```
 
-#### 运行项目
-1. **运行测试**
+#### 开发命令
+1. **开发模式**（热重载）
+   ```bash
+   npm run dev
+   ```
+
+2. **构建项目**
+   ```bash
+   npm run build
+   ```
+
+3. **运行测试**
    ```bash
    npm test
    ```
 
-2. **开发模式**
+4. **测试覆盖度**
    ```bash
-   npm run test:watch
+   npm run test:coverage
    ```
 
-3. **启动应用**
+5. **启动应用**
    ```bash
    npm start
    ```
@@ -66,10 +78,16 @@
 ├── core/            # 核心模块（日志、插件、事件）
 ├── docs/            # 项目文档
 ├── plugins/         # 插件目录
+│   ├── chat/        # 聊天相关插件
+│   ├── diagnostics/ # 诊断工具插件
+│   ├── exporters/   # 数据导出插件
+│   ├── extractors/  # 数据提取插件
+│   └── maintenance/ # 维护工具插件
 ├── shared/          # 共享模块（CDP、MCP、OpenAI）
 ├── tests/           # 测试文件
 ├── ts/              # TypeScript 示例和脚本
-└── utils/           # 工具模块
+├── utils/           # 工具模块
+└── scripts/         # 脚本文件
 ```
 
 ## 🔧 核心功能
@@ -78,17 +96,21 @@
 - ✅ **统一日志** - 完整的日志系统支持
 - ✅ **配置管理** - 集中化的配置系统
 - ✅ **CDP 集成** - Chrome DevTools Protocol 封装
+- ✅ **MCP 集成** - Model Context Protocol 支持
 - ✅ **AI 服务** - OpenAI 等 AI 服务集成
 - ✅ **事件系统** - 插件间通信机制
+- ✅ **工作流控制** - 插件执行顺序和失败处理
 
 ## � 使用示例
 
 ### 基本使用
 ```typescript
-import { ConfigService } from './config'
+import { ConfigService } from './config/config.service'
+import { ChromeCDP } from './shared/cdp'
 
 // 获取配置
-const config = ConfigService.getInstance().get()
+const configService = ConfigService.getInstance()
+const config = configService.get()
 
 // 使用 CDP 连接 Chrome
 const cdp = new ChromeCDP(config.chrome.devtoolsUrl)
@@ -97,17 +119,59 @@ await cdp.connect()
 
 ### 插件开发
 ```typescript
+import { Plugin, PluginContext, PluginMetadata } from './core/types'
+import { ConfigService } from './config/config.service'
+
 // 创建自定义插件
 export class MyPlugin implements Plugin {
-  async init(context: PluginContext) {
-    this.config = ConfigService.getInstance().get()
+  meta: PluginMetadata = {
+    id: 'my-plugin',
+    name: 'My Plugin',
+    version: '1.0.0',
+    enabled: true,
+    order: 1
   }
   
-  async start() {
+  private config!: ConfigService
+  
+  async init(context: PluginContext): Promise<void> {
+    this.config = ConfigService.getInstance()
+    context.log.info('MyPlugin initialized')
+  }
+  
+  async start(): Promise<void> {
     // 插件逻辑
+    console.log('Plugin started')
+  }
+  
+  async stop(): Promise<void> {
+    // 清理逻辑
   }
 }
 ```
+
+### 环境配置
+项目使用 `.env` 文件进行配置，主要配置项包括：
+
+```bash
+# Chrome DevTools 配置
+CHROME_DEVTOOLS_URL=http://localhost:9222
+
+# OpenAI 配置
+OPENAI_API_KEY=your-openai-api-key-here
+
+# 其他 LLM 服务配置
+SILICONFLOW_API_KEY=your-siliconflow-api-key-here
+MODEL_NAME=Qwen/Qwen2.5-7B-Instruct
+
+# 日志配置
+LOG_LEVEL=info
+
+# 输出配置
+OUTPUT_DIR=./output
+```
+
+完整的配置项请参考 `.env.example` 文件。
 
 ##  了解更多
 
