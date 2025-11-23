@@ -1,4 +1,4 @@
-import { Plugin } from '../../../core/plugin'
+import { Plugin, PluginResult } from '../../../core/plugin'
 import { PluginContext } from '../../../core/types'
 import { Builder, WebDriver } from 'selenium-webdriver'
 import WebSocket from 'ws'
@@ -76,33 +76,81 @@ async function findDeepseekTarget(): Promise<CdpTarget | undefined> {
 }
 
 
-async function runCdpDirect(): Promise<void> {
-  let list = await j('/json/list')
-  let t: CdpTarget | undefined = Array.isArray(list) ? list.find((x: any) => typeof x.url === 'string' && x.url.includes('chat.deepseek.com')) : undefined
-  if (!t) {
-    const r = await fetch(`${BASE}/json/new?${encodeURIComponent(TARGET_URL)}`)
-    t = await r.json()
-  }
-  const ws = new WebSocket((t as CdpTarget).webSocketDebuggerUrl)
-  await new Promise(res => ws.once('open', res))
-  const call = createCdpCall(ws)
-  await call('Runtime.enable', {})
-  await call('Page.bringToFront', {})
-  const expr = injection(TEXT)
-  const r = await call('Runtime.evaluate', { expression: expr, awaitPromise: true })
-    const result = r?.result?.result?.value || r?.result || r
+async function runCdpDirect(): Promise<PluginResult> {
+  try {
+    console.log('[chatInjector] 开始CDP直接模式...')
+    let list = await j('/json/list')
+    console.log('[chatInjector] 获取页面列表:', list?.length, '个页面')
+    
+    let t: CdpTarget | undefined = Array.isArray(list) ? list.find((x: any) => typeof x.url === 'string' && x.url.includes('chat.deepseek.com')) : undefined
+    if (!t) {
+      console.log('[chatInjector] 未找到DeepSeek页面，尝试创建新页面...')
+      const r = await fetch(`${BASE}/json/new?${encodeURIComponent(TARGET_URL)}`)
+      t = await r.json()
+      console.log('[chatInjector] 创建新页面结果:', t?.title || t?.type, t?.url)
+    } else {
+      console.log('[chatInjector] 找到现有DeepSeek页面:', t?.title || t?.type, t?.url)
+    }
+    
+    if (!t || !t.webSocketDebuggerUrl) {
+      console.error('[chatInjector] 无法获取有效的WebSocket调试URL')
+      return {
+        success: false,
+        message: '无法连接到Chrome调试端口',
+        data: { error: 'No WebSocket URL' }
+      }
+    }
+    
+    console.log('[chatInjector] 连接WebSocket...')
+    const ws = new WebSocket(t.webSocketDebuggerUrl)
+    await new Promise(res => ws.once('open', res))
+    console.log('[chatInjector] WebSocket连接成功')
+    
+    const call = createCdpCall(ws)
+    console.log('[chatInjector] 启用Runtime...')
+    await call('Runtime.enable', {})
+    console.log('[chatInjector] 切换到前台...')
+    await call('Page.bringToFront', {})
+    
+    const expr = injection(TEXT)
+    console.log('[chatInjector] 执行注入脚本，文本长度:', TEXT.length)
+    const r = await call('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true })
+    console.log('[chatInjector] CDP执行结果:', JSON.stringify(r, null, 2))
+    
+    // CDP返回的结构: { result: { result: { value: actualReturnValue } } }
+    const result = r?.result?.result?.value || r?.result?.result || r?.result || r
+    console.log('[chatInjector] 提取的返回值:', JSON.stringify(result, null, 2))
     console.log(`[chatInjector] 文本注入${result?.ok ? '成功' : '失败'}${result?.selector ? ` (使用选择器: ${result.selector})` : ''}${result?.msg ? ` - ${result.msg}` : ''}`)
+    
     ws.close()
+    
+    return {
+      success: result?.ok || false,
+      message: result?.msg || (result?.ok ? '文本注入成功' : '文本注入失败'),
+      data: {
+        selector: result?.selector,
+        injectedText: TEXT,
+        executionMethod: 'cdp',
+        rawResult: result
+      }
+    }
+  } catch (error) {
+    console.error('[chatInjector] CDP执行异常:', error)
+    return {
+      success: false,
+      message: `CDP执行失败: ${error instanceof Error ? error.message : String(error)}`,
+      data: { error: error instanceof Error ? error.message : String(error) }
+    }
+  }
 }
 
-async function runWithWebDriverOrFallback(): Promise<void> {
+async function runWithWebDriverOrFallback(): Promise<PluginResult> {
   const caps: any = { browserName: 'chrome', 'goog:chromeOptions': { debuggerAddress: '127.0.0.1:9222' } }
   let driver: WebDriver | undefined
   try {
     driver = await new Builder().withCapabilities(caps).build()
   } catch (e) {
-    await runCdpDirect()
-    return
+    return await runCdpDirect()
   }
   try {
     await driver.get(TARGET_URL)
@@ -112,8 +160,7 @@ async function runWithWebDriverOrFallback(): Promise<void> {
       t = await findDeepseekTarget()
     }
     if (!t) {
-      await runCdpDirect()
-      return
+      return await runCdpDirect()
     }
     const ws = new WebSocket(t.webSocketDebuggerUrl)
     await new Promise(res => ws.once('open', res))
@@ -125,7 +172,20 @@ async function runWithWebDriverOrFallback(): Promise<void> {
     const result = r?.result?.result?.value || r?.result || r
     console.log(`[chatInjector] 文本注入${result?.ok ? '成功' : '失败'}${result?.selector ? ` (使用选择器: ${result.selector})` : ''}${result?.msg ? ` - ${result.msg}` : ''}`)
     ws.close()
+    
+    return {
+      success: result?.ok || false,
+      message: result?.msg || (result?.ok ? '文本注入成功' : '文本注入失败'),
+      data: {
+        selector: result?.selector,
+        injectedText: TEXT,
+        executionMethod: 'webdriver'
+      }
+    }
   } finally {
+    if (driver) {
+      try { await driver.quit() } catch {}
+    }
   }
 }
 
@@ -134,8 +194,17 @@ let ctx: PluginContext | null = null
 const plugin: Plugin = {
   meta: { id: 'chatInjector', name: 'Chat Injector', version: '1.0.0', category: 'chat', enabled: true },
   async init(c: PluginContext) { ctx = c },
-  async start() {
-    try { await runWithWebDriverOrFallback() } catch (e: any) { if (ctx) ctx.log.error(e?.message || String(e)) }
+  async start(): Promise<PluginResult> {
+    try { 
+      return await runWithWebDriverOrFallback() 
+    } catch (e: any) { 
+      if (ctx) ctx.log.error(e?.message || String(e))
+      return { 
+        success: false,
+        message: '插件执行失败',
+        error: e instanceof Error ? e : new Error(String(e))
+      }
+    }
   },
   async stop() {},
   async dispose() {}

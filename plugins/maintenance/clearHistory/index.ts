@@ -5,7 +5,7 @@ import path from 'path'
 import fs from 'fs'
 import { createCdpCall, CdpCall } from '../../../shared/cdp'
 
-type CdpTarget = { type?: string; title?: string; url: string; webSocketDebuggerUrl: string }
+type CdpTarget = { id?: string; type?: string; title?: string; url: string; webSocketDebuggerUrl: string }
 
 const BASE = process.env.CHROME_DEVTOOLS_URL || 'http://127.0.0.1:9222'
 const TARGET_URL = 'https://chat.deepseek.com/'
@@ -52,7 +52,7 @@ function openSidebarScript(): string {
   } catch { return { ok:false } } })()`
 }
 
-function deleteChatsScript(): string {
+function deleteChatsScript(maxAttempts: number): string {
   return `(() => { const wait = ms => new Promise(r=>setTimeout(r,ms));
     function isChatItem(el){ const href = (el.getAttribute && el.getAttribute('href'))||''; if (href && href.includes('/chat/')) return true; const t = (el.textContent||'')+(el.innerText||''); if (/Chat|对话|会话/i.test(t)) return true; const a = el.closest && el.closest('a[href*="/chat/"]'); return !!a }
     function findItems(){ const list = Array.from(document.querySelectorAll('aside a[href*="/chat/"], a[href*="/chat/"], aside [role="listitem"], aside .chat-item, aside .conversation-item')); return list.filter(isChatItem) }
@@ -69,12 +69,77 @@ function deleteChatsScript(): string {
       if (conf) { try { conf.click() } catch {} }
       await wait(260)
       return true }
-    async function run(){ let count = 0; while (true) { const items = findItems(); if (items.length === 0) break; const it = items[0]; const ok = await clickDelete(it); if (ok) count++; await wait(2000); const currentItems = findItems(); if (currentItems.length === 0) break; } const remain = findItems(); return { ok:true, deleted: count, remaining: remain.length } }
+    async function run(){ 
+      let count = 0; 
+      let maxAttempts = ${Math.max(1, maxAttempts)};
+      let previousItemCount = -1;
+      let noProgressCount = 0;
+      
+      while (true) { 
+        const items = findItems(); 
+        if (items.length === 0) break; 
+        
+        // 如果项目数量没有减少，增加无进度计数器
+        if (items.length === previousItemCount) {
+          noProgressCount++;
+        } else {
+          noProgressCount = 0;
+        }
+        
+        // 如果连续3次尝试都没有进展，退出循环
+        if (noProgressCount >= 3) {
+          console.log('No progress detected, stopping deletion');
+          break;
+        }
+        
+        previousItemCount = items.length;
+        
+        const it = items[0]; 
+        const ok = await clickDelete(it); 
+        if (ok) count++; 
+        
+        await wait(2000); 
+        
+        maxAttempts--;
+        if (maxAttempts <= 0) {
+          console.log('Max attempts reached, stopping deletion');
+          break;
+        }
+        
+        const currentItems = findItems(); 
+        if (currentItems.length === 0) break; 
+      } 
+      const remain = findItems(); 
+      return { ok:true, deleted: count, remaining: remain.length } 
+    }
     return run(); })()`
 }
 
 function verifyEmptyScript(): string {
-  return `(() => { const list = Array.from(document.querySelectorAll('aside a[href*="/chat/"], a[href*="/chat/"]')); return { ok: list.length===0, remain: list.length } })()`
+  return `(() => { const list = Array.from(document.querySelectorAll('aside a[href*="/chat/"], a[href*="/chat/"], aside [role="listitem"], aside .chat-item, aside .conversation-item')); return { ok: list.length===0, remain: list.length } })()`
+}
+
+async function openWsWithSafety(url: string): Promise<WebSocket> {
+  const ws = new WebSocket(url)
+  await Promise.race([
+    new Promise(res => ws.once('open', res)),
+    new Promise((_, rej) => ws.once('error', rej)),
+    new Promise((_, rej) => ws.once('close', () => rej(new Error('ws closed before open')))),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('ws open timeout')), TIMEOUT_MS))
+  ])
+  return ws
+}
+
+async function waitForPageReady(call: CdpCall, timeoutMs: number): Promise<void> {
+  const start = Date.now()
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const r = await call('Runtime.evaluate', { expression: 'document.readyState', returnByValue: true }, { timeout: 3000 })
+      const s = r?.result?.result?.value as string | undefined
+      if (s === 'interactive' || s === 'complete') return
+    } catch {}
+    await new Promise(res => setTimeout(res, 300))
+  }
 }
 
 let ctx: PluginContext | null = null
@@ -83,27 +148,30 @@ const plugin: Plugin = {
   meta: { id: 'clearHistory', name: 'Clear History', version: '1.0.0', category: 'maintenance', enabled: false },
   async init(c: PluginContext) { ctx = c },
   async start() {
+    let ws: WebSocket | null = null
     try {
       const t = await ensureTarget()
-      if (!t) return
-      const ws = new WebSocket(t.webSocketDebuggerUrl)
-      await new Promise(res => ws.once('open', res))
+      if (!t || !t.webSocketDebuggerUrl) return
+      ws = await openWsWithSafety(t.webSocketDebuggerUrl)
       const call = createCdpCall(ws, TIMEOUT_MS)
       await call('Runtime.enable', {})
       await call('DOM.enable', {})
       await call('Accessibility.enable', {})
       await call('Page.enable', {})
       await call('Page.bringToFront', {})
+      if (t.id) { try { await call('Target.activateTarget', { targetId: t.id }) } catch {} }
+      await waitForPageReady(call, TIMEOUT_MS)
       const outDir = path.join(process.cwd(), 'output')
       await captureScreenshot(call, path.join(outDir, `history-before_${now()}.png`))
       const openRes: any = await call('Runtime.evaluate', { expression: openSidebarScript(), awaitPromise: true, returnByValue: true })
-      const delRes: any = await call('Runtime.evaluate', { expression: deleteChatsScript(), awaitPromise: true, returnByValue: true })
+      const maxAttempts = parseInt(process.env.CLEAR_MAX_ATTEMPTS || '100', 10)
+      const delRes: any = await call('Runtime.evaluate', { expression: deleteChatsScript(maxAttempts), awaitPromise: true, returnByValue: true })
       const v: any = await call('Runtime.evaluate', { expression: verifyEmptyScript(), awaitPromise: true, returnByValue: true })
       const empty = !!(v?.result?.result?.value?.ok)
       await captureScreenshot(call, path.join(outDir, `history-after_${now()}.png`))
       if (ctx) ctx.log.info('clearHistory', openRes?.result?.result?.value, delRes?.result?.result?.value, empty)
-      try { ws.close() } catch {}
     } catch (e: any) { if (ctx) ctx.log.error(e?.message || String(e)) }
+    finally { try { if (ws) ws.close() } catch {} }
   },
   async stop() {},
   async dispose() {}

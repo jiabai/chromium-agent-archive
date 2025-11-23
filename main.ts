@@ -25,9 +25,61 @@ async function main(): Promise<void> {
   const storage = new MemoryStorage()
   const ctx: PluginContext = { bus, log, storage, env: 'node' }
   const pm = new PluginManager()
+  
+  // 注册所有插件
   for (const p of getPlugins()) pm.register(p)
   await pm.initAll(ctx)
-  await pm.startAll()
+  
+  // 获取启用的插件并按order排序
+  const enabledPlugins = getPlugins()
+    .filter(p => p.meta.enabled !== false)
+    .sort((a, b) => (a.meta.order || 0) - (b.meta.order || 0))
+  
+  if (enabledPlugins.length === 0) {
+    log.info('没有启用的插件，跳过执行')
+    return
+  }
+  
+  // 构建工作流规则：前一个失败就停止执行
+  const rules: Array<{ pluginId: string; onSuccess?: string; onFailure?: string }> = []
+  for (let i = 0; i < enabledPlugins.length - 1; i++) {
+    const currentPlugin = enabledPlugins[i]
+    const nextPlugin = enabledPlugins[i + 1]
+    
+    // 成功时执行下一个插件，失败时停止（不设置onFailure）
+    rules.push({
+      pluginId: currentPlugin.meta.id,
+      onSuccess: nextPlugin.meta.id
+      // onFailure 不设置，失败时自然停止
+    })
+  }
+  
+  // 最后一个插件不需要后续规则
+  const lastPlugin = enabledPlugins[enabledPlugins.length - 1]
+  rules.push({
+    pluginId: lastPlugin.meta.id
+    // 最后一个插件，无后续操作
+  })
+  
+  // 执行工作流
+  log.info(`开始执行插件工作流，共 ${enabledPlugins.length} 个插件`)
+  const results = await pm.startWorkflow({
+    starts: [enabledPlugins[0].meta.id], // 从第一个插件开始
+    rules: rules,
+    skipDisabled: true
+  })
+  
+  // 检查结果
+  const failedResults = results.filter(r => !r.success)
+  if (failedResults.length > 0) {
+    log.error(`工作流执行失败，${failedResults.length} 个插件失败:`)
+    failedResults.forEach(r => {
+      log.error(`  - ${r.pluginId}: ${r.message}${r.error ? ` (${r.error.message})` : ''}`)
+    })
+  } else {
+    log.info('所有插件执行成功')
+  }
+  
   const stop = async () => { await pm.stopAll(); await pm.disposeAll() }
   process.on('SIGINT', () => { stop().then(() => process.exit(0)) })
   process.on('SIGTERM', () => { stop().then(() => process.exit(0)) })

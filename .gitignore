@@ -106,6 +106,7 @@ snapshots/
 *.json
 !package.json
 !tsconfig.json
+.browsers/
 
 # Temporary files
 tmp/
