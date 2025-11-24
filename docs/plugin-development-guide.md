@@ -88,7 +88,7 @@ plugins/
 ```typescript
 import { Plugin, PluginResult } from '../../../core/plugin'
 import { PluginContext } from '../../../core/types'
-```
+
 const plugin: Plugin = {
   meta: {
     id: 'myPlugin',
