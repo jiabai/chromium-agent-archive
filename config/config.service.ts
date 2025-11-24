@@ -95,13 +95,14 @@ export class ConfigService {
       plugins: {
         newChatOpener: { enabled: false, order: 1 },
         chatInjector: { enabled: false, order: 2 },
-        clearHistory: { enabled: false, order: 3 },
-        totalLinks: { enabled: false, order: 4 },
-        snapshot: { enabled: false, order: 5 },
-        llmPing: { enabled: false, order: 6 },
-        historyRecord: { enabled: false, order: 7 },
-        deepSeekDomExport: { enabled: false, order: 8 },
-        conversationThread: { enabled: false, order: 9 }
+        chatInjectorEnhanced: { enabled: false, order: 3 },
+        clearHistory: { enabled: false, order: 4 },
+        totalLinks: { enabled: false, order: 5 },
+        snapshot: { enabled: false, order: 6 },
+        llmPing: { enabled: false, order: 7 },
+        historyRecord: { enabled: false, order: 8 },
+        deepSeekDomExport: { enabled: false, order: 9 },
+        conversationThread: { enabled: false, order: 10 }
       },
       logLevel: (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error') || 'info',
       outputDir: process.env.OUTPUT_DIR || 'output'

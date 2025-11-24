@@ -23,8 +23,20 @@ export async function startMcp(command?: string, args?: string[]): Promise<McpIn
 }
 
 export async function stopMcp(mcpInstance: { client?: any; transport?: any }): Promise<void> {
-  if ((mcpInstance as any).client) { await (mcpInstance as any).client.close() }
-  if ((mcpInstance as any).transport) { await (mcpInstance as any).transport.close() }
+  try {
+    if (mcpInstance?.client) {
+      await mcpInstance.client.close()
+    }
+  } catch (e) {
+    console.warn('MCP client close error:', e)
+  }
+  try {
+    if (mcpInstance?.transport) {
+      await mcpInstance.transport.close()
+    }
+  } catch (e) {
+    console.warn('MCP transport close error:', e)
+  }
 }
 
 export async function callToolWithTimeout(client: any, name: string, args: any, timeoutMs?: number): Promise<any> {

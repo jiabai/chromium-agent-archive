@@ -93,12 +93,19 @@ const plugin: Plugin = {
     try {
       const client = await createClient()
       const htmlFilePath = path.join(process.cwd(), 'output', 'page-captured.html')
-      if (!fs.existsSync(htmlFilePath)) return
+      if (!fs.existsSync(htmlFilePath)) {
+        return { success: false, message: 'HTML文件不存在: output/page-captured.html' }
+      }
       const htmlContent = readHtmlFile(htmlFilePath)
       const extracted = await extractQADialogue(htmlContent, client)
       const savedFilePath = saveExtractedDialogue(extracted, htmlFilePath, htmlContent)
       if (ctx) ctx.log.info('conversationThread', savedFilePath)
-    } catch (e: any) { if (ctx) ctx.log.error(e?.message || String(e)) }
+      return { success: true, message: `对话提取完成，结果保存到: ${savedFilePath}` }
+    } catch (e: any) { 
+      const errorMessage = e?.message || String(e)
+      if (ctx) ctx.log.error('conversationThread', errorMessage)
+      return { success: false, message: errorMessage, error: e instanceof Error ? e : new Error(errorMessage) }
+    }
   },
   async stop() {},
   async dispose() {}

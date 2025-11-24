@@ -10,7 +10,8 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
-    "prestart": "npm run build"
+    "prestart": "npm run build",
+    "plugin-info": "tsx scripts/plugin-info-display.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.22.0",

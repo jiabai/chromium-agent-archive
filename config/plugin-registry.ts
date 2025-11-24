@@ -2,9 +2,10 @@ import { Plugin } from '../core/plugin'
 import { ConfigService } from './config.service'
 
 import chatInjector from '../plugins/chat/chatInjector/index'
+import chatInjectorEnhanced from '../plugins/chat/chatInjectorEnhanced/index'
 import newChatOpener from '../plugins/chat/newChatOpener/index'
 import clearHistory from '../plugins/maintenance/clearHistory/index'
-import totalLinks from '../plugins/extractors/totalLinks/index'
+import totalLinks from '../plugins/exporters/totalLinks/index'
 import snapshot from '../plugins/diagnostics/snapshot/index'
 import llmPing from '../plugins/diagnostics/llmPing/index'
 import historyRecord from '../plugins/extractors/historyRecord/index'
@@ -14,6 +15,7 @@ import conversationThread from '../plugins/extractors/conversationThread/index'
 const byId: Record<string, Plugin> = {
   newChatOpener,
   chatInjector,
+  chatInjectorEnhanced,
   clearHistory,
   totalLinks,
   snapshot,

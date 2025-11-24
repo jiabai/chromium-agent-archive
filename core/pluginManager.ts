@@ -97,14 +97,22 @@ export class PluginManager {
       if (!depsOk) {
         res = new PluginExecutionResult(id, false, 'Dependency not met', undefined, undefined, 0)
       } else {
+        // 添加插件执行日志
+        console.log(`正在执行插件: ${id}`)
         try {
           const r = await p.start()
           const t = Date.now() - startTime
-          if (r) res = new PluginExecutionResult(id, r.success, r.message, r.data, r.error, t)
-          else res = new PluginExecutionResult(id, true, undefined, undefined, undefined, t)
+          if (r) {
+            res = new PluginExecutionResult(id, r.success, r.message, r.data, r.error, t)
+            console.log(`插件 ${id} 执行完成，状态: ${r.success ? '成功' : '失败'}${r.message ? `, 消息: ${r.message}` : ''}`)
+          } else {
+            res = new PluginExecutionResult(id, true, undefined, undefined, undefined, t)
+            console.log(`插件 ${id} 执行完成，状态: 成功`)
+          }
         } catch (e) {
           const t = Date.now() - startTime
           res = new PluginExecutionResult(id, false, 'Plugin execution failed', undefined, e instanceof Error ? e : new Error(String(e)), t)
+          console.log(`插件 ${id} 执行失败，错误: ${e instanceof Error ? e.message : String(e)}`)
         }
       }
       this.executionResults.push(res)

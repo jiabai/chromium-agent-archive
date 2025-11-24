@@ -1,12 +1,24 @@
 import { Plugin } from '../../../core/plugin'
 import { PluginContext } from '../../../core/types'
-import { createOpenAIClient } from '../../../shared/openai'
 import * as fs from 'fs'
 import * as path from 'path'
 
 type ExtractionResult = { content: string; tokenUsage: number | string; model: string; batchCount?: number }
 
 let ctx: PluginContext | null = null
+
+async function createClient(): Promise<any> {
+  const dynamicImport = new Function('m', 'return import(m)') as (m: string) => Promise<any>
+  const mod = await dynamicImport('openai') as any
+  const { OpenAI } = mod
+  const client = new OpenAI({
+    apiKey: process.env.SILICONFLOW_API_KEY || process.env.OPENAI_API_KEY || '',
+    baseURL: process.env.LLM_BASE_URL || process.env.OPENAI_BASE_URL || 'https://api.siliconflow.cn/v1',
+    maxRetries: parseInt(process.env.LLM_MAX_RETRIES || process.env.OPENAI_MAX_RETRIES || '2', 10),
+    timeout: parseInt(process.env.LLM_TIMEOUT || process.env.OPENAI_TIMEOUT || '30000', 10)
+  })
+  return client
+}
 
 function readJsonFile(filePath: string): any {
   const absolutePath = path.resolve(filePath)
@@ -84,14 +96,21 @@ const plugin: Plugin = {
   async init(c: PluginContext) { ctx = c },
   async start() {
     try {
-      const client = await createOpenAIClient()
+      const client = await createClient()
       const jsonFilePath = path.join(process.cwd(), 'output', 'page-text-content.json')
-      if (!fs.existsSync(jsonFilePath)) return
+      if (!fs.existsSync(jsonFilePath)) {
+        return { success: false, message: 'JSON文件不存在: output/page-text-content.json' }
+      }
       const jsonData = readJsonFile(jsonFilePath)
       const extracted = await extractDialogueHistory(jsonData, client)
       const savedFilePath = saveExtractedHistory(extracted, jsonFilePath, jsonData)
       if (ctx) ctx.log.info('historyRecord', savedFilePath)
-    } catch (e: any) { if (ctx) ctx.log.error(e?.message || String(e)) }
+      return { success: true, message: `历史记录提取完成，结果保存到: ${savedFilePath}` }
+    } catch (e: any) { 
+      const errorMessage = e?.message || String(e)
+      if (ctx) ctx.log.error('historyRecord', errorMessage)
+      return { success: false, message: errorMessage, error: e instanceof Error ? e : new Error(errorMessage) }
+    }
   },
   async stop() {},
   async dispose() {}

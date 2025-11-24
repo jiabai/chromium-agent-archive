@@ -80,9 +80,15 @@ async function main(): Promise<void> {
     log.info('所有插件执行成功')
   }
   
-  const stop = async () => { await pm.stopAll(); await pm.disposeAll() }
-  process.on('SIGINT', () => { stop().then(() => process.exit(0)) })
-  process.on('SIGTERM', () => { stop().then(() => process.exit(0)) })
+  // 确保程序正常退出
+  const stop = async () => { 
+    await pm.stopAll()
+    await pm.disposeAll()
+  }
+  
+  // 执行清理并退出
+  await stop()
+  process.exit(0)
 }
 
 main().catch(e => { console.error(e); process.exit(1) })
