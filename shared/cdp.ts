@@ -18,14 +18,16 @@ export function createCdpCall(ws: WebSocket, timeoutMs: number = 30000): CdpCall
     } catch {}
   })
   ws.on('error', () => {
-    for (const [key, v] of map.entries()) {
+    const entries = Array.from(map.entries())
+    for (const [key, v] of entries) {
       if (v.tid) clearTimeout(v.tid)
       v.reject(new Error('ws error'))
       map.delete(key)
     }
   })
   ws.on('close', () => {
-    for (const [key, v] of map.entries()) {
+    const entries = Array.from(map.entries())
+    for (const [key, v] of entries) {
       if (v.tid) clearTimeout(v.tid)
       v.reject(new Error('ws closed'))
       map.delete(key)

@@ -1,12 +1,19 @@
 import { Plugin } from '../../../core/plugin'
 import { PluginContext } from '../../../core/types'
 import { startMcp, stopMcp } from '../../../shared/mcp'
-import fs from 'fs'
+import * as fs from 'fs'
 
 let ctx: PluginContext | null = null
 
 const plugin: Plugin = {
-  meta: { id: 'totalLinks', name: 'Total Links Extractor', version: '1.0.0', category: 'extractors', enabled: false },
+  meta: { 
+    id: 'totalLinks', 
+    name: 'Total Links Extractor', 
+    version: '1.0.0', 
+    category: 'extractors', 
+    enabled: false,
+    description: '链接总数提取器 - 通过MCP协议获取页面中所有链接元素的信息，包括文本、URL、可见性状态等，统计总链接数并保存为JSON文件。'
+  },
   async init(c: PluginContext) { ctx = c },
   async start() {
     let mcp: { client: any; transport: any } | null = null

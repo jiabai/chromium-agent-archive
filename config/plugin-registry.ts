@@ -43,3 +43,20 @@ export function getPlugins(): Plugin[] {
   
   return list
 }
+
+export function getAllPlugins(): Plugin[] {
+  const configService = ConfigService.getInstance()
+  const pluginConfigs = configService.get('plugins')
+  
+  const list: Plugin[] = []
+  
+  for (const [id, plugin] of Object.entries(byId)) {
+    const config = pluginConfigs[id]
+    if (config) {
+      plugin.meta.enabled = config.enabled
+    }
+    list.push(plugin)
+  }
+  
+  return list
+}

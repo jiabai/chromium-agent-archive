@@ -4,9 +4,11 @@ export interface PluginMeta {
   id: string
   name: string
   version: string
-  category: PluginCategory
+  category?: string
   dependsOn?: string[]
-  enabled?: boolean
+  enabled: boolean
+  order?: number
+  description?: string
 }
 
 export interface Event {

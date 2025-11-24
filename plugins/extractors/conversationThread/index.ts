@@ -1,7 +1,7 @@
 import { Plugin } from '../../../core/plugin'
 import { PluginContext } from '../../../core/types'
-import fs from 'fs'
-import path from 'path'
+import * as fs from 'fs'
+import * as path from 'path'
 
 type ExtractionResult = { content: string; tokenUsage: number | string; model: string; batchCount?: number }
 
@@ -80,7 +80,14 @@ function saveExtractedDialogue(extractionResult: ExtractionResult, htmlFilePath:
 }
 
 const plugin: Plugin = {
-  meta: { id: 'conversationThread', name: 'Conversation Thread Extractor', version: '1.0.0', category: 'extractors', enabled: false },
+  meta: { 
+    id: 'conversationThread', 
+    name: 'Conversation Thread Extractor', 
+    version: '1.0.0', 
+    category: 'extractors', 
+    enabled: false,
+    description: '对话线程提取器 - 通过LLM从HTML文件中智能提取用户问题和AI回答的对话对，支持批量处理和长内容分段提取，将问答对话保存到本地文件。'
+  },
   async init(c: PluginContext) { ctx = c },
   async start() {
     try {

@@ -1,6 +1,6 @@
 # 配置管理系统文档
 
-**📍 文档位置**: `config/README.md` | **[返回文档中心](../docs/README.md)**
+**📍 文档位置**: `config/README.md` | **[返回文档中心](../docs/index.md)**
 
 ## 概述
 

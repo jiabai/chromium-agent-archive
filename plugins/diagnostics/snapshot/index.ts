@@ -2,8 +2,8 @@ import { Plugin } from '../../../core/plugin'
 import { PluginContext } from '../../../core/types'
 import { startMcp, stopMcp, callToolWithTimeout } from '../../../shared/mcp'
 import { ConfigService } from '../../../config'
-import fs from 'fs'
-import path from 'path'
+import * as fs from 'fs'
+import * as path from 'path'
 
 function getTextFromContentParts(parts: any[]): string {
   try {
@@ -91,7 +91,14 @@ async function runSnapshot(): Promise<void> {
 }
 
 const plugin: Plugin = {
-  meta: { id: 'snapshot', name: 'Snapshot', version: '1.0.0', category: 'diagnostics', enabled: false },
+  meta: { 
+    id: 'snapshot', 
+    name: 'Snapshot', 
+    version: '1.0.0', 
+    category: 'diagnostics', 
+    enabled: false,
+    description: '页面快照诊断工具 - 通过MCP协议捕获页面截图、DOM快照或执行JavaScript评估，支持多种输出格式（PNG图片、JSON数据），自动保存到output目录。适用于页面状态记录、调试分析和问题诊断。'
+  },
   async init(c: PluginContext) { ctx = c },
   async start() { await runSnapshot() },
   async stop() {},

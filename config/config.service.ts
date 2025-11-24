@@ -1,7 +1,7 @@
 import { config as dotenvConfig } from 'dotenv';
-import path from 'path';
-import fs from 'fs';
-import { AppConfig, ChromeConfig, OpenAIConfig, LLMConfig, NewChatConfig, ClearHistoryConfig, MCPConfig, SnapshotConfig } from './types';
+import * as path from 'path';
+import * as fs from 'fs';
+import { AppConfig } from './types';
 
 export class ConfigService {
   private static instance: ConfigService;

@@ -19,6 +19,7 @@
     "shared/**/*.ts",
     "config/**/*.ts",
     "utils/**/*.ts",
+    "scripts/**/*.ts",
     "main.ts",
     "logging.ts"
   ]

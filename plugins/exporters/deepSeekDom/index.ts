@@ -2,8 +2,8 @@ import { Plugin } from '../../../core/plugin'
 import { PluginContext } from '../../../core/types'
 import { startMcp, stopMcp, callToolWithTimeout } from '../../../shared/mcp'
 import { ConfigService } from '../../../config'
-import fs from 'fs'
-import path from 'path'
+import * as fs from 'fs'
+import * as path from 'path'
 
 function getTextFromContentParts(parts: any): string {
   if (!Array.isArray(parts)) return ''
@@ -61,7 +61,14 @@ function extractHtml(raw: string): string {
 let ctx: PluginContext | null = null
 
 const plugin: Plugin = {
-  meta: { id: 'deepSeekDomExport', name: 'DeepSeek DOM Export', version: '1.0.0', category: 'exporters', enabled: false },
+  meta: { 
+    id: 'deepSeekDom', 
+    name: 'DeepSeek DOM Export', 
+    version: '1.0.0', 
+    category: 'exporters', 
+    enabled: false,
+    description: 'DeepSeek DOM导出工具 - 通过MCP协议获取当前页面的完整HTML内容，支持多种格式的数据提取和HTML解析，将页面DOM结构导出为HTML文件保存到本地。'
+  },
   async init(c: PluginContext) { ctx = c },
   async start() {
     let mcp: { client?: any; transport?: any } | null = null

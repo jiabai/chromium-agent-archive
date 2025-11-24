@@ -1,6 +1,6 @@
 # 日志模块测试文档
 
-**📍 文档位置**: `tests/README.md` | **[返回文档中心](../docs/README.md)**
+**📍 文档位置**: `tests/README.md` | **[返回文档中心](../docs/index.md)**
 
 ## 测试结构
 

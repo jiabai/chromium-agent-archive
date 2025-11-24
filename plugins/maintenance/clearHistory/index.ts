@@ -1,8 +1,8 @@
 import { Plugin } from '../../../core/plugin'
 import { PluginContext } from '../../../core/types'
 import WebSocket from 'ws'
-import path from 'path'
-import fs from 'fs'
+import * as path from 'path'
+import * as fs from 'fs'
 import { createCdpCall, CdpCall } from '../../../shared/cdp'
 
 type CdpTarget = { id?: string; type?: string; title?: string; url: string; webSocketDebuggerUrl: string }
@@ -145,7 +145,14 @@ async function waitForPageReady(call: CdpCall, timeoutMs: number): Promise<void>
 let ctx: PluginContext | null = null
 
 const plugin: Plugin = {
-  meta: { id: 'clearHistory', name: 'Clear History', version: '1.0.0', category: 'maintenance', enabled: false },
+  meta: { 
+    id: 'clearHistory', 
+    name: 'Clear History', 
+    version: '1.0.0', 
+    category: 'maintenance', 
+    enabled: false,
+    description: '历史记录清理器 - 通过Chrome DevTools协议自动清理Deepseek页面左侧对话历史，支持截图记录清理前后状态，智能识别删除按钮并批量移除对话记录。'
+  },
   async init(c: PluginContext) { ctx = c },
   async start() {
     let ws: WebSocket | null = null

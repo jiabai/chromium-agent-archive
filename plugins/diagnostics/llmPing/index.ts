@@ -13,7 +13,14 @@ async function runPing(): Promise<void> {
 }
 
 const plugin: Plugin = {
-  meta: { id: 'llmPing', name: 'LLM Ping', version: '1.0.0', category: 'diagnostics', enabled: false },
+  meta: { 
+    id: 'llmPing', 
+    name: 'LLM Ping', 
+    version: '1.0.0', 
+    category: 'diagnostics', 
+    enabled: false,
+    description: 'LLM服务连通性检测工具 - 通过发送简单的测试请求验证OpenAI/DeepSeek等LLM服务的可用性和响应时间，用于诊断AI服务连接状态。'
+  },
   async init(c: PluginContext) { ctx = c },
   async start() { try { await runPing() } catch (e: any) { if (ctx) ctx.log.error(e?.message || String(e)) } },
   async stop() {},

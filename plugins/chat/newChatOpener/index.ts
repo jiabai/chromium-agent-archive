@@ -159,7 +159,14 @@ async function verifyNewChat(call: CdpCall): Promise<ClickResult> {
 let ctx: PluginContext | null = null
 
 const plugin: Plugin = {
-  meta: { id: 'newChatOpener', name: 'New Chat Opener', version: '1.0.0', category: 'chat', enabled: true },
+  meta: { 
+    id: 'newChatOpener', 
+    name: 'New Chat Opener', 
+    version: '1.0.0', 
+    category: 'chat', 
+    enabled: true,
+    description: '智能新聊天开启器 - 通过多种策略（AX查询、DOM选择、帧遍历等）自动寻找并点击网页中的"新聊天"或"新建对话"按钮，支持多框架页面和复杂的SPA应用。适用于自动化开启新的聊天会话。'
+  },
   async init(c: PluginContext) { ctx = c },
   async start() {
     try {

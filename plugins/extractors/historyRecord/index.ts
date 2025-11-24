@@ -1,8 +1,8 @@
 import { Plugin } from '../../../core/plugin'
 import { PluginContext } from '../../../core/types'
 import { createOpenAIClient } from '../../../shared/openai'
-import fs from 'fs'
-import path from 'path'
+import * as fs from 'fs'
+import * as path from 'path'
 
 type ExtractionResult = { content: string; tokenUsage: number | string; model: string; batchCount?: number }
 
@@ -73,7 +73,14 @@ function saveExtractedHistory(extractionResult: ExtractionResult, jsonFilePath: 
 }
 
 const plugin: Plugin = {
-  meta: { id: 'historyRecord', name: 'History Record Extractor', version: '1.0.0', category: 'extractors', enabled: false },
+  meta: { 
+    id: 'historyRecord', 
+    name: 'History Record Extractor', 
+    version: '1.0.0', 
+    category: 'extractors', 
+    enabled: false,
+    description: '历史记录提取器 - 从JSON数据中提取Deepseek页面左侧对话控制区的问答对话历史，包含对话标题和对应的URL链接，支持批量处理大文件。'
+  },
   async init(c: PluginContext) { ctx = c },
   async start() {
     try {

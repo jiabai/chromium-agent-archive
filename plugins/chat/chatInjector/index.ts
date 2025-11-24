@@ -192,7 +192,14 @@ async function runWithWebDriverOrFallback(): Promise<PluginResult> {
 let ctx: PluginContext | null = null
 
 const plugin: Plugin = {
-  meta: { id: 'chatInjector', name: 'Chat Injector', version: '1.0.0', category: 'chat', enabled: true },
+  meta: { 
+    id: 'chatInjector', 
+    name: 'Chat Injector', 
+    version: '1.0.0', 
+    category: 'chat', 
+    enabled: true,
+    description: '智能文本注入插件 - 通过CDP协议自动识别网页中的输入框（textarea、contenteditable元素等）并注入预设文本，支持自动发送功能。适用于聊天机器人、表单自动填充等场景。'
+  },
   async init(c: PluginContext) { ctx = c },
   async start(): Promise<PluginResult> {
     try { 
