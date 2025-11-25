@@ -118,6 +118,11 @@ export class PluginManager {
       this.executionResults.push(res)
       successMap.set(id, !!res.success)
       visited.add(id)
+      
+      // 在每个插件执行结束后暂停10秒钟
+      console.log(`插件 ${id} 执行完成，暂停10秒...`)
+      await new Promise(resolve => setTimeout(resolve, 10000))
+      
       const rule = ruleMap.get(id)
       const nextId = res.success ? rule?.onSuccess : rule?.onFailure
       if (nextId && !visited.has(nextId)) queue.push(nextId)

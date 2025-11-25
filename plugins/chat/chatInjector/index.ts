@@ -2,7 +2,7 @@ import { Plugin, PluginResult } from '../../../core/plugin'
 import { PluginContext } from '../../../core/types'
 import { Builder, WebDriver } from 'selenium-webdriver'
 import WebSocket from 'ws'
-import { createCdpCall, CdpCall } from '../../../shared/cdp'
+import { createCdpCall } from '../../../shared/cdp'
 
 type CdpTarget = { type?: string; title?: string; url: string; webSocketDebuggerUrl: string }
 
