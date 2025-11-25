@@ -122,6 +122,13 @@ async function runCdpDirect(): Promise<PluginResult> {
     console.log('[chatInjector] 提取的返回值:', JSON.stringify(result, null, 2))
     console.log(`[chatInjector] 文本注入${result?.ok ? '成功' : '失败'}${result?.selector ? ` (使用选择器: ${result.selector})` : ''}${result?.msg ? ` - ${result.msg}` : ''}`)
     
+    // 如果文本注入成功，等待1分钟
+    if (result?.ok) {
+      console.log('[chatInjector] 文本注入成功，等待1分钟...')
+      await new Promise(resolve => setTimeout(resolve, 60000)) // 60000毫秒 = 1分钟
+      console.log('[chatInjector] 等待完成')
+    }
+    
     ws.close()
     
     return {
@@ -171,6 +178,14 @@ async function runWithWebDriverOrFallback(): Promise<PluginResult> {
     const r = await call('Runtime.evaluate', { expression: expr, awaitPromise: true })
     const result = r?.result?.result?.value || r?.result || r
     console.log(`[chatInjector] 文本注入${result?.ok ? '成功' : '失败'}${result?.selector ? ` (使用选择器: ${result.selector})` : ''}${result?.msg ? ` - ${result.msg}` : ''}`)
+    
+    // 如果文本注入成功，等待1分钟
+    if (result?.ok) {
+      console.log('[chatInjector] 文本注入成功，等待1分钟...')
+      await new Promise(resolve => setTimeout(resolve, 60000)) // 60000毫秒 = 1分钟
+      console.log('[chatInjector] 等待完成')
+    }
+    
     ws.close()
     
     return {

@@ -95,7 +95,7 @@ export class ConfigService {
       plugins: {
         newChatOpener: { enabled: false, order: 1 },
         chatInjector: { enabled: false, order: 2 },
-        chatInjectorEnhanced: { enabled: false, order: 3 },
+
         clearHistory: { enabled: false, order: 4 },
         totalLinks: { enabled: false, order: 5 },
         snapshot: { enabled: false, order: 6 },

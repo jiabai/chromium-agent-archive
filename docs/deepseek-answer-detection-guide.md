@@ -12,6 +12,7 @@ DeepSeek的回答采用打字机效果，内容会逐步显示，这给自动化
 
 1. **智能检测机制**
    - 监测回答容器的内容变化
+   - 智能区分思考过程与最终回答
    - 检测打字动画指示器
    - 识别完成标识（如复制按钮）
    - 判断内容稳定性
@@ -32,12 +33,9 @@ DeepSeek的回答采用打字机效果，内容会逐步显示，这给自动化
 ## 文件结构
 
 ```
-plugins/chat/chatInjectorEnhanced/
+plugins/chat/chatInjector/
 ├── index.ts          # 增强版插件主文件
 └── README.md         # 详细文档
-
-examples/
-└── chat-injector-enhanced-demo.ts  # 使用示例
 ```
 
 ## 使用方法
@@ -46,13 +44,13 @@ examples/
 
 ```typescript
 import { PluginManager } from './core/pluginManager'
-import chatInjectorEnhanced from './plugins/chat/chatInjectorEnhanced'
+import chatInjector from './plugins/chat/chatInjector'
 
 const pluginManager = new PluginManager(logger)
-await pluginManager.register(chatInjectorEnhanced)
+await pluginManager.register(chatInjector)
 
 // 执行插件
-const result = await pluginManager.startPlugin('chatInjectorEnhanced')
+const result = await pluginManager.startPlugin('chatInjector')
 ```
 
 ### 2. 自定义问题文本
@@ -72,6 +70,17 @@ const CONTENT_STABLE_THRESHOLD = 1000; // 更短的稳定时间
 ```
 
 ## 检测原理
+
+### 思考过程识别
+插件优先排除思考过程容器，避免将思考记录误认为最终回答：
+```typescript
+const thinkingSelectors = [
+  '[data-testid*="thinking"]',
+  '.thinking-process',
+  '[class*="reasoning"]',
+  '.internal-monologue'
+]
+```
 
 ### 回答容器识别
 插件会尝试多种选择器来定位回答容器：
@@ -113,16 +122,16 @@ const isComplete = !isTyping &&
 ```typescript
 {
   success: boolean,           // 整体执行是否成功
-  message: string,          // 执行结果描述
+  message: string,            // 执行结果描述
   data: {
-    selector: string,       // 使用的输入框选择器
-    injectedText: string,   // 注入的文本
-    executionMethod: string, // 执行方法（cdp/webdriver）
-    answerDetection: {      // 回答检测结果
-      complete: boolean,    // 是否检测到回答完成
-      finalContent: string, // 最终回答内容（前200字符）
-      reason: string,       // 完成原因
-      duration: number      // 检测耗时（毫秒）
+    selector: string,         // 使用的输入框选择器
+    injectedText: string,     // 注入的文本
+    executionMethod: string,  // 执行方法（cdp/webdriver）
+    answerDetection: {        // 回答检测结果
+      complete: boolean,      // 是否检测到回答完成
+      finalContent: string,  // 最终回答内容（前200字符）
+      reason: string,         // 完成原因
+      duration: number        // 检测耗时（毫秒）
     }
   }
 }
@@ -132,33 +141,32 @@ const isComplete = !isTyping &&
 
 回答检测可能返回以下状态：
 
-- `typing_in_progress`: 打字机效果正在进行
-- `empty_content`: 回答内容为空
-- `has_completion_indicator`: 发现完成标识（如复制按钮）
-- `content_stable`: 内容已稳定
-- `content_stable_timeout`: 内容稳定超时
-- `timeout`: 整体检测超时
-
-## 使用示例
-
-运行示例脚本：
-```bash
-ts-node examples/chat-injector-enhanced-demo.ts
-```
+| 状态 | 说明 |
+|------|------|
+| `thinking_in_progress` | 检测到思考过程，等待最终回答 |
+| `typing_in_progress` | 正在输入内容 |
+| `empty_content` | 回答内容为空 |
+| `has_completion_indicator` | 检测到完成标识（如复制按钮） |
+| `content_stable` | 内容已稳定，回答可能完成 |
+| `content_stable_timeout` | 内容长时间稳定，判定为完成 |
+| `timeout` | 整体检测超时
 
 ## 优势
 
-1. **准确性高**：多重检测策略，准确判断回答完成状态
-2. **适应性强**：支持多种AI聊天平台，不仅限于DeepSeek
-3. **可配置**：灵活的参数配置，适应不同场景需求
-4. **详细日志**：提供详细的检测过程和结果信息
-5. **错误处理**：完善的错误处理机制，确保稳定运行
+1. **高准确性**：多重检测机制确保准确识别回答完成状态
+2. **智能过滤**：能够区分思考过程和最终回答，避免误判
+3. **兼容性好**：支持多种AI对话平台，不仅限于DeepSeek
+4. **配置灵活**：可根据需要调整检测参数和超时时间
+5. **详细日志**：提供丰富的调试信息，便于问题排查
+6. **向后兼容**：完全兼容原版chatInjector插件的使用方式
 
 ## 注意事项
 
-1. 确保Chrome浏览器已启动并开启调试端口（9222）
-2. DeepSeek页面需要预先打开
-3. 网络连接要稳定
-4. 根据实际使用情况调整检测参数
+1. **首次使用**：建议先在测试环境验证检测准确性
+2. **性能考虑**：频繁的DOM检测可能影响页面性能
+3. **网络延迟**：考虑网络延迟对检测时间的影响
+4. **内容长度**：极长回答可能需要调整超时参数
+5. **特殊格式**：某些特殊格式的回答可能需要额外的检测逻辑
+6. **思考过程**：某些大模型会显示详细的思考过程，插件会自动过滤这些内容
 
 这个增强版插件能够有效解决DeepSeek打字机效果的检测问题，让你的自动化流程更加智能和可靠。
