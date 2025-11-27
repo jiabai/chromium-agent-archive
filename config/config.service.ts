@@ -44,37 +44,49 @@ export class ConfigService {
   }
 
   private mergeConfig(fileConfig: Partial<AppConfig>): AppConfig {
-    const defaultConfig: AppConfig = {
+    // 首先合并文件配置和默认配置
+    const baseConfig = this.deepMerge(this.getDefaultConfig(), fileConfig);
+    
+    // 然后应用环境变量覆盖（环境变量优先级最高）
+    return this.applyEnvironmentOverrides(baseConfig);
+  }
+
+  private getDefaultConfig(): AppConfig {
+    return {
       chrome: {
-        devtoolsUrl: process.env.CHROME_DEVTOOLS_URL || 'http://127.0.0.1:9222',
-        timeoutMs: parseInt(process.env.CHROME_TIMEOUT_MS || '30000', 10)
+        devtoolsUrl: 'http://127.0.0.1:9222',
+        timeoutMs: 30000
       },
       openai: {
-        apiKey: process.env.OPENAI_API_KEY || '',
-        baseURL: process.env.OPENAI_BASE_URL || undefined,
-        timeout: Number(process.env.OPENAI_TIMEOUT || 30000),
-        maxRetries: Number(process.env.OPENAI_MAX_RETRIES || 2)
+        apiKey: '',
+        baseURL: undefined,
+        timeout: 30000,
+        maxRetries: 2
       },
       llm: {
-        apiKey: process.env.SILICONFLOW_API_KEY || process.env.OPENAI_API_KEY || '',
-        baseURL: process.env.LLM_BASE_URL || process.env.OPENAI_BASE_URL || 'https://api.siliconflow.cn/v1',
-        timeout: parseInt(process.env.LLM_TIMEOUT || '30000', 10),
-        maxRetries: parseInt(process.env.LLM_MAX_RETRIES || '2', 10),
-        model: process.env.MODEL_NAME || 'deepseek-ai/DeepSeek-V3.2-Exp',
-        maxTokens: parseInt(process.env.LLM_MAX_TOKENS || '2000', 10),
-        htmlMaxChars: parseInt(process.env.HTML_MAX_CHARS || '200000', 10),
-        jsonMaxChars: parseInt(process.env.JSON_MAX_CHARS || '200000', 10)
+        apiKey: '',
+        baseURL: 'https://api.siliconflow.cn/v1',
+        timeout: 30000,
+        maxRetries: 2,
+        model: 'deepseek-ai/DeepSeek-V3.2-Exp',
+        maxTokens: 2000,
+        htmlMaxChars: 200000,
+        jsonMaxChars: 200000
       },
       newChat: {
-        axName: process.env.NEWCHAT_AX_NAME || '开启新对话',
-        axRole: process.env.NEWCHAT_AX_ROLE || 'button',
-        cdpTimeoutMs: parseInt(process.env.CDP_TIMEOUT_MS || '10000', 10),
-        maxTotalMs: parseInt(process.env.NEWCHAT_MAX_TOTAL_MS || '20000', 10),
-        axTimeoutMs: parseInt(process.env.NEWCHAT_AX_TIMEOUT_MS || '6000', 10),
-        frameTimeoutMs: parseInt(process.env.NEWCHAT_FRAME_TIMEOUT_MS || '6000', 10)
+        axName: '开启新对话',
+        axRole: 'button',
+        cdpTimeoutMs: 10000,
+        maxTotalMs: 20000,
+        axTimeoutMs: 6000,
+        frameTimeoutMs: 6000
       },
       clearHistory: {
-        timeoutMs: parseInt(process.env.CLEAR_TIMEOUT_MS || '20000', 10)
+        timeoutMs: 20000
+      },
+      chatInjector: {
+        text: '请搜索NemoVideo这家公司的信息',
+        targetUrl: 'https://chat.deepseek.com'
       },
       mcp: {
         command: 'npx',
@@ -95,7 +107,6 @@ export class ConfigService {
       plugins: {
         newChatOpener: { enabled: false, order: 1 },
         chatInjector: { enabled: false, order: 2 },
-
         clearHistory: { enabled: false, order: 4 },
         totalLinks: { enabled: false, order: 5 },
         snapshot: { enabled: false, order: 6 },
@@ -104,11 +115,57 @@ export class ConfigService {
         deepSeekDomExport: { enabled: false, order: 9 },
         conversationThread: { enabled: false, order: 10 }
       },
-      logLevel: (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error') || 'info',
-      outputDir: process.env.OUTPUT_DIR || 'output'
+      logLevel: 'info',
+      outputDir: 'output'
     };
+  }
 
-    return this.deepMerge(defaultConfig, fileConfig);
+  private applyEnvironmentOverrides(baseConfig: AppConfig): AppConfig {
+    return {
+      ...baseConfig,
+      chrome: {
+        devtoolsUrl: process.env.CHROME_DEVTOOLS_URL || baseConfig.chrome.devtoolsUrl,
+        timeoutMs: parseInt(process.env.CHROME_TIMEOUT_MS || String(baseConfig.chrome.timeoutMs), 10)
+      },
+      openai: {
+        ...baseConfig.openai,
+        apiKey: process.env.OPENAI_API_KEY || baseConfig.openai.apiKey,
+        baseURL: process.env.OPENAI_BASE_URL || baseConfig.openai.baseURL,
+        timeout: Number(process.env.OPENAI_TIMEOUT || baseConfig.openai.timeout),
+        maxRetries: Number(process.env.OPENAI_MAX_RETRIES || baseConfig.openai.maxRetries)
+      },
+      llm: {
+        ...baseConfig.llm,
+        apiKey: process.env.SILICONFLOW_API_KEY || process.env.OPENAI_API_KEY || baseConfig.llm.apiKey,
+        baseURL: process.env.LLM_BASE_URL || process.env.OPENAI_BASE_URL || baseConfig.llm.baseURL,
+        timeout: parseInt(process.env.LLM_TIMEOUT || String(baseConfig.llm.timeout), 10),
+        maxRetries: parseInt(process.env.LLM_MAX_RETRIES || String(baseConfig.llm.maxRetries), 10),
+        model: process.env.MODEL_NAME || baseConfig.llm.model,
+        maxTokens: parseInt(process.env.LLM_MAX_TOKENS || String(baseConfig.llm.maxTokens), 10),
+        htmlMaxChars: parseInt(process.env.HTML_MAX_CHARS || String(baseConfig.llm.htmlMaxChars), 10),
+        jsonMaxChars: parseInt(process.env.JSON_MAX_CHARS || String(baseConfig.llm.jsonMaxChars), 10)
+      },
+      newChat: {
+        ...baseConfig.newChat,
+        axName: process.env.NEWCHAT_AX_NAME || baseConfig.newChat.axName,
+        axRole: process.env.NEWCHAT_AX_ROLE || baseConfig.newChat.axRole,
+        cdpTimeoutMs: parseInt(process.env.CDP_TIMEOUT_MS || String(baseConfig.newChat.cdpTimeoutMs), 10),
+        maxTotalMs: parseInt(process.env.NEWCHAT_MAX_TOTAL_MS || String(baseConfig.newChat.maxTotalMs), 10),
+        axTimeoutMs: parseInt(process.env.NEWCHAT_AX_TIMEOUT_MS || String(baseConfig.newChat.axTimeoutMs), 10),
+        frameTimeoutMs: parseInt(process.env.NEWCHAT_FRAME_TIMEOUT_MS || String(baseConfig.newChat.frameTimeoutMs), 10)
+      },
+      clearHistory: {
+        ...baseConfig.clearHistory,
+        timeoutMs: parseInt(process.env.CLEAR_TIMEOUT_MS || String(baseConfig.clearHistory.timeoutMs), 10)
+      },
+      chatInjector: {
+        ...baseConfig.chatInjector,
+        text: process.env.CHAT_INJECTOR_TEXT || baseConfig.chatInjector.text,
+        targetUrl: process.env.CHAT_INJECTOR_TARGET_URL || baseConfig.chatInjector.targetUrl
+      },
+      logLevel: (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error') || baseConfig.logLevel,
+      outputDir: process.env.OUTPUT_DIR || baseConfig.outputDir
+    };
   }
 
   private deepMerge(target: any, source: any): any {

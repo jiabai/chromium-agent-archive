@@ -3,12 +3,14 @@ import { PluginContext } from '../../../core/types'
 import { Builder, WebDriver } from 'selenium-webdriver'
 import WebSocket from 'ws'
 import { createCdpCall } from '../../../shared/cdp'
+import { config } from '../../../config/config.service'
 
 type CdpTarget = { type?: string; title?: string; url: string; webSocketDebuggerUrl: string }
 
 const BASE = process.env.CHROME_DEVTOOLS_URL || 'http://127.0.0.1:9222'
-const TARGET_URL = 'https://chat.deepseek.com'
-const TEXT = '请搜索NemoVideo这家公司的信息'
+const chatInjectorConfig = config.get('chatInjector')
+const TARGET_URL = chatInjectorConfig?.targetUrl || 'https://chat.deepseek.com'
+const TEXT = chatInjectorConfig?.text
 
 function injection(text: string): string {
   const s = JSON.stringify(text)

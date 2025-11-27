@@ -34,6 +34,11 @@ export interface ClearHistoryConfig {
   timeoutMs: number;
 }
 
+export interface ChatInjectorConfig {
+  text: string;
+  targetUrl?: string;
+}
+
 export interface MCPConfig {
   command: string;
   args: string[];
@@ -63,6 +68,7 @@ export interface AppConfig {
   llm: LLMConfig;
   newChat: NewChatConfig;
   clearHistory: ClearHistoryConfig;
+  chatInjector?: ChatInjectorConfig;
   mcp: MCPConfig;
   snapshot: SnapshotConfig;
   plugins: Record<string, PluginConfig>;
