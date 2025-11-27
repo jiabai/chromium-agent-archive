@@ -1,185 +1,185 @@
-# 项目概览
+# Project Overview
 
-基于 Chrome DevTools Protocol 的智能代理系统，支持插件化架构和多种 AI 服务集成。
+An intelligent agent system based on Chrome DevTools Protocol, supporting plugin architecture and multiple AI service integrations.
 
-## 🚀 项目简介
+## 🚀 Project Introduction
 
-这是一个功能强大的浏览器自动化代理系统，专为处理复杂的网页交互和AI对话场景而设计。系统通过 Chrome DevTools Protocol (CDP) 与浏览器进行深度集成，实现了智能化的对话管理、数据提取和自动化操作。
+This is a powerful browser automation agent system designed for handling complex web interactions and AI conversation scenarios. The system deeply integrates with browsers through Chrome DevTools Protocol (CDP), enabling intelligent conversation management, data extraction, and automated operations.
 
-### 💡 核心能力
+### 💡 Core Capabilities
 
-- **🤖 智能对话处理**: 自动识别和处理网页中的对话界面，支持多种聊天平台
-- **📊 数据智能提取**: 从网页中智能提取对话内容、链接、历史记录等关键信息
-- **🔄 自动化工作流**: 基于插件的可配置工作流，支持失败重试和顺序控制
-- **🧠 AI 服务集成**: 无缝集成 OpenAI、SiliconFlow 等多种 LLM 服务
-- **📸 页面快照**: 支持页面状态捕获和诊断
-- **🔧 灵活扩展**: 插件化架构支持自定义功能扩展
+- **🤖 Intelligent Conversation Processing**: Automatically identifies and handles conversation interfaces on web pages, supporting multiple chat platforms
+- **📊 Intelligent Data Extraction**: Intelligently extracts key information such as conversation content, links, and history records from web pages
+- **🔄 Automated Workflow**: Configurable workflow based on plugins, supporting failure retry and sequence control
+- **🧠 AI Service Integration**: Seamlessly integrates multiple LLM services like OpenAI, SiliconFlow, etc.
+- **📸 Page Snapshots**: Supports page state capture and diagnostics
+- **🔧 Flexible Extension**: Plugin architecture supports custom function extensions
 
-### 🎯 典型应用场景
+### 🎯 Typical Application Scenarios
 
-- **客服对话分析**: 自动提取和分析客服对话记录
-- **内容监控**: 监控特定网页的内容变化和更新
-- **数据收集**: 从复杂的网页界面中提取结构化数据
-- **自动化测试**: 基于 CDP 的浏览器自动化测试
-- **AI 对话集成**: 将网页对话与 AI 服务集成
+- **Customer Service Conversation Analysis**: Automatically extracts and analyzes customer service conversation records
+- **Content Monitoring**: Monitors content changes and updates on specific web pages
+- **Data Collection**: Extracts structured data from complex web interfaces
+- **Automated Testing**: Browser automation testing based on CDP
+- **AI Conversation Integration**: Integrates web conversations with AI services
 
-### 🔗 技术架构
+### 🔗 Technical Architecture
 
-系统采用分层架构设计：
-- **核心层**: 提供插件管理、事件总线、配置管理等基础服务
-- **插件层**: 实现具体的业务功能，如对话提取、数据导出等
-- **服务层**: 集成 CDP、OpenAI、MCP 等外部服务
-- **工具层**: 提供日志、存储、工具函数等支持
+The system adopts a layered architecture design:
+- **Core Layer**: Provides basic services such as plugin management, event bus, and configuration management
+- **Plugin Layer**: Implements specific business functions, such as conversation extraction and data export
+- **Service Layer**: Integrates external services like CDP, OpenAI, MCP, etc.
+- **Utility Layer**: Provides support for logs, storage, utility functions, etc.
 
-## 🎯 项目特色
+## 🎯 Project Features
 
-- **🤖 智能对话管理**: 自动化处理聊天对话流程，支持多种对话平台
-- **🧠 多 AI 服务支持**: 集成 OpenAI、SiliconFlow 等多种 LLM 服务，支持智能对话分析
-- **🔌 插件化扩展**: 灵活的功能扩展机制，支持动态加载和管理插件
-- **⚙️ 配置驱动**: 集中化的配置管理系统，支持多环境配置
-- **📋 日志追踪**: 完整的操作日志和调试支持，支持多级别日志记录
-- **🔄 工作流控制**: 智能的插件执行顺序和失败处理机制，支持失败重试
-- **🌐 MCP 集成**: 支持 Model Context Protocol 协议，实现标准化 AI 服务集成
-- **📊 数据智能提取**: 自动识别和提取网页中的结构化数据
-- **🎯 精确元素定位**: 基于 CDP 的精确 DOM 元素操作和交互
-- **🔒 安全可靠**: 完善的错误处理和异常恢复机制
+- **🤖 Intelligent Conversation Management**: Automatically handles chat conversation processes, supporting multiple conversation platforms
+- **🧠 Multi-AI Service Support**: Integrates multiple LLM services like OpenAI, SiliconFlow, etc., supporting intelligent conversation analysis
+- **🔌 Plugin Extension**: Flexible function extension mechanism, supporting dynamic loading and management of plugins
+- **⚙️ Configuration-Driven**: Centralized configuration management system, supporting multi-environment configuration
+- **📋 Log Tracking**: Complete operation logs and debugging support, supporting multi-level log recording
+- **🔄 Workflow Control**: Intelligent plugin execution sequence and failure handling mechanism, supporting failure retry
+- **🌐 MCP Integration**: Supports Model Context Protocol, enabling standardized AI service integration
+- **📊 Intelligent Data Extraction**: Automatically identifies and extracts structured data from web pages
+- **🎯 Precise Element Positioning**: Precise DOM element operations and interactions based on CDP
+- **🔒 Safe and Reliable**: Complete error handling and exception recovery mechanisms
 
-## 📚 文档导航
+## 📚 Documentation Navigation
 
-### 🎯 核心文档
-- **[📖 文档中心](docs/index.md)** - 完整的文档导航和概览
-- **[🔧 配置系统](config/README.md)** - 配置管理系统详解
-- **[📊 日志系统](docs/logging-guide.md)** - 日志系统使用指南
-- **[🧪 测试文档](tests/README.md)** - 测试模块说明
+### 🎯 Core Documentation
+- **[📖 Documentation Center](docs/index.md)** - Complete documentation navigation and overview
+- **[🔧 Configuration System](config/README.md)** - Configuration management system details
+- **[📊 Logging System](docs/logging-guide.md)** - Logging system usage guide
+- **[🧪 Test Documentation](tests/README.md)** - Test module description
 
-### 🔧 系统要求
+### 🔧 System Requirements
 
-#### 基础环境
-- **Node.js**: 18.0 或更高版本
-- **npm/yarn**: 包管理器
-- **Chrome 浏览器**: 支持 DevTools Protocol
-- **操作系统**: Windows/macOS/Linux
+#### Basic Environment
+- **Node.js**: 18.0 or higher
+- **npm/yarn**: Package manager
+- **Chrome Browser**: Supports DevTools Protocol
+- **Operating System**: Windows/macOS/Linux
 
-#### 可选依赖
-- **Chrome 远程调试端口**: 用于 CDP 连接
-- **AI 服务 API 密钥**: OpenAI、SiliconFlow 等服务
+#### Optional Dependencies
+- **Chrome Remote Debugging Port**: For CDP connection
+- **AI Service API Keys**: Services like OpenAI, SiliconFlow, etc.
 
-### 🚀 快速开始
+### 🚀 Quick Start
 
-#### 环境准备
-- **Node.js**: 18.0 或更高版本
-- **包管理器**: npm 或 yarn
-- **Chrome 浏览器**: 最新版本（支持 DevTools Protocol）
-- **Git**: 用于克隆项目
+#### Environment Preparation
+- **Node.js**: 18.0 or higher
+- **Package Manager**: npm or yarn
+- **Chrome Browser**: Latest version (supports DevTools Protocol)
+- **Git**: For cloning the project
 
-#### 安装步骤
+#### Installation Steps
 
-##### 1. 克隆项目
+##### 1. Clone Project
 ```bash
 git clone <repository-url>
 cd chromium-agent-archive
 ```
 
-##### 2. 安装依赖
+##### 2. Install Dependencies
 ```bash
 npm install
 ```
 
-##### 3. 配置环境变量
+##### 3. Configure Environment Variables
 ```bash
-# 创建环境配置文件
+# Create environment configuration file
 cp .env.example .env
-# 编辑 .env 文件，配置必要的 API 密钥和参数
+# Edit .env file, configure necessary API keys and parameters
 ```
 
-##### 4. 启动 Chrome 远程调试（可选）
-如果需要使用 CDP 功能，确保 Chrome 以远程调试模式启动：
+##### 4. Start Chrome Remote Debugging (Optional)
+If you need to use CDP functionality, ensure Chrome starts in remote debugging mode:
 ```bash
-# Windows 用户可以使用项目提供的脚本
+# Windows users can use the provided script
 .\scripts\Start-Chrome-9222.ps1
 
-# 或者手动启动 Chrome
+# Or manually start Chrome
 chrome.exe --remote-debugging-port=9222
 ```
 
-#### 开发命令
-1. **开发模式**（热重载）
+#### Development Commands
+1. **Development Mode** (Hot Reload)
    ```bash
    npm run dev
    ```
 
-2. **构建项目**
+2. **Build Project**
    ```bash
    npm run build
    ```
 
-3. **运行测试**
+3. **Run Tests**
    ```bash
    npm test
    ```
 
-4. **测试覆盖度**
+4. **Test Coverage**
    ```bash
    npm run test:coverage
    ```
 
-5. **启动应用**
+5. **Start Application**
    ```bash
    npm start
    ```
 
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
-├── config/          # 配置管理系统
-├── core/            # 核心模块（日志、插件、事件）
-├── docs/            # 项目文档
-├── plugins/         # 插件目录
-│   ├── chat/        # 聊天相关插件
-│   ├── diagnostics/ # 诊断工具插件
-│   ├── exporters/   # 数据导出插件
-│   ├── extractors/  # 数据提取插件
-│   └── maintenance/ # 维护工具插件
-├── shared/          # 共享模块（CDP、MCP、OpenAI）
-├── tests/           # 测试文件
-├── ts/              # TypeScript 示例和脚本
-├── utils/           # 工具模块
-└── scripts/         # 脚本文件
+├── config/          # Configuration Management System
+├── core/            # Core Modules (Logs, Plugins, Events)
+├── docs/            # Project Documentation
+├── plugins/         # Plugin Directory
+│   ├── chat/        # Chat-related Plugins
+│   ├── diagnostics/ # Diagnostic Tool Plugins
+│   ├── exporters/   # Data Export Plugins
+│   ├── extractors/  # Data Extraction Plugins
+│   └── maintenance/ # Maintenance Tool Plugins
+├── shared/          # Shared Modules (CDP, MCP, OpenAI)
+├── tests/           # Test Files
+├── ts/              # TypeScript Examples and Scripts
+├── utils/           # Utility Modules
+└── scripts/         # Script Files
 ```
 
-## 🔧 核心功能
+## 🔧 Core Features
 
-- ✅ **插件化架构** - 支持动态加载和管理插件
-- ✅ **统一日志** - 完整的日志系统支持
-- ✅ **配置管理** - 集中化的配置系统
-- ✅ **CDP 集成** - Chrome DevTools Protocol 封装
-- ✅ **MCP 集成** - Model Context Protocol 支持
-- ✅ **AI 服务** - OpenAI 等 AI 服务集成
-- ✅ **事件系统** - 插件间通信机制
-- ✅ **工作流控制** - 插件执行顺序和失败处理
+- ✅ **Plugin Architecture** - Supports dynamic loading and management of plugins
+- ✅ **Unified Logging** - Complete logging system support
+- ✅ **Configuration Management** - Centralized configuration system
+- ✅ **CDP Integration** - Chrome DevTools Protocol encapsulation
+- ✅ **MCP Integration** - Model Context Protocol support
+- ✅ **AI Services** - Integration with AI services like OpenAI
+- ✅ **Event System** - Inter-plugin communication mechanism
+- ✅ **Workflow Control** - Plugin execution sequence and failure handling
 
-## � 使用示例
+## 💻 Usage Examples
 
-### 基本使用
+### Basic Usage
 ```typescript
 import { ConfigService } from './config/config.service'
 import { ChromeCDP } from './shared/cdp'
 
-// 获取配置
+// Get configuration
 const configService = ConfigService.getInstance()
 const config = configService.get()
 
-// 使用 CDP 连接 Chrome
+// Connect to Chrome using CDP
 const cdp = new ChromeCDP(config.chrome.devtoolsUrl)
 await cdp.connect()
 ```
 
-### 插件开发
+### Plugin Development
 ```typescript
 import { Plugin, PluginContext, PluginMetadata } from './core/types'
 import { ConfigService } from './config/config.service'
 
-// 创建自定义插件
+// Create custom plugin
 export class MyPlugin implements Plugin {
   meta: PluginMetadata = {
     id: 'my-plugin',
@@ -197,59 +197,59 @@ export class MyPlugin implements Plugin {
   }
   
   async start(): Promise<void> {
-    // 插件逻辑
+    // Plugin logic
     console.log('Plugin started')
   }
   
   async stop(): Promise<void> {
-    // 清理逻辑
+    // Cleanup logic
   }
 }
 ```
 
-### 环境配置
-项目使用 `.env` 文件进行配置，主要配置项包括：
+### Environment Configuration
+The project uses `.env` file for configuration. Main configuration items include:
 
 ```bash
-# Chrome DevTools 配置
+# Chrome DevTools Configuration
 CHROME_DEVTOOLS_URL=http://localhost:9222
 
-# OpenAI 配置
+# OpenAI Configuration
 OPENAI_API_KEY=your-openai-api-key-here
 
-# 其他 LLM 服务配置
+# Other LLM Service Configuration
 SILICONFLOW_API_KEY=your-siliconflow-api-key-here
 MODEL_NAME=Qwen/Qwen2.5-7B-Instruct
 
-# 日志配置
+# Logging Configuration
 LOG_LEVEL=info
 
-# 输出配置
+# Output Configuration
 OUTPUT_DIR=./output
 ```
 
-完整的配置项请参考 `.env.example` 文件。
+For complete configuration items, please refer to the `.env.example` file.
 
-##  了解更多
+## 📖 Learn More
 
-请访问 **[文档中心](docs/index.md)** 获取完整的文档和使用指南。
+Please visit **[Documentation Center](docs/index.md)** for complete documentation and usage guides.
 
-## 🤝 贡献指南
+## 🤝 Contributing Guidelines
 
-欢迎提交 Issue 和 Pull Request 来改进项目。
+Issues and Pull Requests are welcome to improve the project.
 
-1. Fork 项目
-2. 创建特性分支 (`git checkout -b feature/amazing-feature`)
-3. 提交更改 (`git commit -m 'Add some amazing feature'`)
-4. 推送到分支 (`git push origin feature/amazing-feature`)
-5. 创建 Pull Request
+1. Fork the project
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add some amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Create Pull Request
 
-## 📄 许可证
+## 📄 License
 
-本项目采用 MIT 许可证 - 详情请查看 [LICENSE](LICENSE) 文件。
+This project adopts the MIT License - please see the [LICENSE](LICENSE) file for details.
 
-## 🙏 致谢
+## 🙏 Acknowledgments
 
-- Chrome DevTools Protocol 团队
-- OpenAI 提供的优秀 API
-- 所有贡献者和支持者
+- Chrome DevTools Protocol team
+- OpenAI for providing excellent APIs
+- All contributors and supporters
