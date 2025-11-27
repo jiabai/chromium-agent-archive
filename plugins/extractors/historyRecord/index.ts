@@ -34,9 +34,9 @@ async function extractDialogueHistory(jsonData: any, client: any): Promise<Extra
   const model = process.env.MODEL_NAME || 'deepseek-ai/DeepSeek-V3.2-Exp'
   const jsonMaxChars = Number(process.env.JSON_MAX_CHARS || 200000)
   if (jsonString.length > jsonMaxChars) return await extractDialogueHistoryInBatches(jsonData, client, model, timeoutMs, maxTokens, jsonMaxChars)
-  const prompt = `从中提取deepseek页面左边栏对话控制区中的问答对话历史的标题，和标题对应的deepseek url，并打印。\n\nJSON数据：\n${jsonString}\n\n请按以下格式输出：\n标题: [对话标题]\nURL: [对应的deepseek URL]\n\n请只提取属于deepseek页面左边栏对话控制区的对话历史，忽略其他不相关的链接。`
+  const prompt = `从JSON数据中提取deepseek页面左边栏对话控制区的对话历史，只输出标题和对应的deepseek URL，不要包含任何分析、解释或总结文字。\n\nJSON数据：\n${jsonString}\n\n按以下格式输出：\n标题: [对话标题]\nURL: [对应的deepseek URL]\n\n如果没有找到符合条件的对话历史，不要输出任何内容。`
   const timeoutPromise = new Promise((_, reject) => { setTimeout(() => reject(new Error(`请求超时 (${timeoutMs}ms)`)), timeoutMs) })
-  const apiRequest = client.chat.completions.create({ model, messages: [{ role: 'system', content: '你是一个专业的JSON数据分析师，擅长从JSON数据中提取deepseek页面对话历史信息。请准确识别对话标题和对应的URL，并以清晰的格式展示。' }, { role: 'user', content: prompt }], max_tokens: maxTokens, temperature: 0.3 })
+  const apiRequest = client.chat.completions.create({ model, messages: [{ role: 'system', content: '你是一个专业的JSON数据分析师，只提取deepseek页面对话历史信息，不添加任何分析或解释。请准确识别对话标题和对应的URL，严格按照指定格式输出。' }, { role: 'user', content: prompt }], max_tokens: maxTokens, temperature: 0.3 })
   const response = await Promise.race([apiRequest, timeoutPromise]) as any
   const result: string = (response?.choices?.[0]?.message?.content as string) || ''
   const tokenUsage: number | string = (response?.usage?.total_tokens ?? 'N/A') as number | string
@@ -57,10 +57,10 @@ async function extractDialogueHistoryInBatches(jsonData: any, client: any, model
     const batch = batches[i]
     const batchJson = { totalLinks: batch.links.length, links: batch.links }
     const batchString = JSON.stringify(batchJson, null, 2)
-    const prompt = `从中提取deepseek页面左边栏对话控制区中的问答对话历史的标题，和标题对应的deepseek url。这是第 ${i + 1}/${batches.length} 个片段。\n\nJSON数据片段：\n${batchString}\n\n请按以下格式输出：\n标题: [对话标题]\nURL: [对应的deepseek URL]\n\n只提取此片段中属于deepseek页面左边栏对话控制区的对话历史，忽略其他不相关的链接。${batch.isLast ? '' : '不需要包含之前片段的内容。'}`
+    const prompt = `从JSON数据片段中提取deepseek页面左边栏对话控制区的对话历史，只输出标题和对应的deepseek URL，不要包含任何分析、解释或总结文字。这是第 ${i + 1}/${batches.length} 个片段。\n\nJSON数据片段：\n${batchString}\n\n按以下格式输出：\n标题: [对话标题]\nURL: [对应的deepseek URL]\n\n只提取此片段中符合条件的对话历史，忽略其他不相关的链接。${batch.isLast ? '' : '不需要包含之前片段的内容。'}\n如果没有找到符合条件的对话历史，不要输出任何内容。`
     const timeoutPromise = new Promise((_, reject) => { setTimeout(() => reject(new Error(`批次 ${i + 1} 请求超时 (${timeoutMs}ms)`)), timeoutMs) })
     try {
-      const apiRequest = client.chat.completions.create({ model, messages: [{ role: 'system', content: '你是一个专业的JSON数据分析师，擅长从JSON数据中提取deepseek页面对话历史信息。请准确识别对话标题和对应的URL，并以清晰的格式展示。' }, { role: 'user', content: prompt }], max_tokens: maxTokens, temperature: 0.3 })
+      const apiRequest = client.chat.completions.create({ model, messages: [{ role: 'system', content: '你是一个专业的JSON数据分析师，只提取deepseek页面对话历史信息，不添加任何分析或解释。请准确识别对话标题和对应的URL，严格按照指定格式输出。' }, { role: 'user', content: prompt }], max_tokens: maxTokens, temperature: 0.3 })
       const response = await Promise.race([apiRequest, timeoutPromise]) as any
       const result: string = (response?.choices?.[0]?.message?.content as string) || ''
       const tokenUsage: number | string = (response?.usage?.total_tokens ?? 'N/A') as number | string

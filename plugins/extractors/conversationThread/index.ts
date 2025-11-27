@@ -32,7 +32,7 @@ async function extractQADialogue(htmlContent: string, client: any): Promise<Extr
   const maxTokens = Number(process.env.LLM_MAX_TOKENS || 2000)
   const htmlMaxChars = Number(process.env.HTML_MAX_CHARS || 200000)
   if (htmlContent.length > htmlMaxChars) return await extractQADialogueInBatches(htmlContent, client, model, timeoutMs, maxTokens, htmlMaxChars)
-  const prompt = `请从以下HTML文件中提取问答对话信息，并打印出来。请识别出用户的问题和AI的回答，以清晰的格式展示对话内容。\n\nHTML内容：\n${htmlContent}\n\n请按以下格式输出：\n用户: [用户的问题]\nAI: [AI的回答]\n\n请提取所有完整的问答对话对。`
+  const prompt = `从以下HTML文件中提取问答对话信息，只输出用户问题和AI回答，不要包含任何分析、解释或总结文字。\n\nHTML内容：\n${htmlContent}\n\n按以下格式输出：\n用户: [用户的问题]\nAI: [AI的回答]\n\n只提取完整的问答对话对，不要添加其他内容。`
   const timeoutPromise = new Promise((_, reject) => { setTimeout(() => reject(new Error(`请求超时 (${timeoutMs}ms)`)), timeoutMs) })
   const apiRequest = client.chat.completions.create({ model, messages: [{ role: 'system', content: '你是一个专业的HTML内容分析助手，擅长从HTML文件中提取对话信息。请准确识别用户问题和AI回答，并以清晰的格式展示。' }, { role: 'user', content: prompt }], max_tokens: maxTokens, temperature: 0.3 })
   const response = await Promise.race([apiRequest, timeoutPromise]) as any
@@ -52,10 +52,10 @@ async function extractQADialogueInBatches(htmlContent: string, client: any, mode
   let totalTokenUsage = 0
   for (let i = 0; i < batches.length; i++) {
     const batch = batches[i]
-    const prompt = `请从以下HTML片段中提取问答对话信息。这是第 ${i + 1}/${batches.length} 个片段。\n\nHTML片段：\n${batch.content}\n\n请按以下格式输出：\n用户: [用户的问题]\nAI: [AI的回答]\n\n只提取此片段中的完整问答对话对。${batch.isLast ? '' : '不需要包含之前片段的内容。'}`
+    const prompt = `从以下HTML片段中提取问答对话信息，只输出用户问题和AI回答，不要包含任何分析、解释或总结文字。这是第 ${i + 1}/${batches.length} 个片段。\n\nHTML片段：\n${batch.content}\n\n按以下格式输出：\n用户: [用户的问题]\nAI: [AI的回答]\n\n只提取此片段中的完整问答对话对，不要添加其他内容。${batch.isLast ? '' : '不需要包含之前片段的内容。'}`
     const timeoutPromise = new Promise((_, reject) => { setTimeout(() => reject(new Error(`批次 ${i + 1} 请求超时 (${timeoutMs}ms)`)), timeoutMs) })
     try {
-      const apiRequest = client.chat.completions.create({ model, messages: [{ role: 'system', content: '你是一个专业的HTML内容分析助手，擅长从HTML片段中提取对话信息。请准确识别用户问题和AI回答，并以清晰的格式展示。' }, { role: 'user', content: prompt }], max_tokens: maxTokens, temperature: 0.3 })
+      const apiRequest = client.chat.completions.create({ model, messages: [{ role: 'system', content: '你是一个专业的HTML内容提取助手，只提取对话信息，不添加任何分析或解释。请准确识别用户问题和AI回答，严格按照指定格式输出。' }, { role: 'user', content: prompt }], max_tokens: maxTokens, temperature: 0.3 })
       const response = await Promise.race([apiRequest, timeoutPromise]) as any
       const result: string = (response?.choices?.[0]?.message?.content as string) || ''
       const tokenUsage: number | string = (response?.usage?.total_tokens ?? 'N/A') as number | string
