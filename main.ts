@@ -20,6 +20,7 @@ function createLogger(): Logger {
 }
 
 async function main(): Promise<void> {
+  const startTime = Date.now()
   const bus = new SimpleEventBus()
   const log = createLogger()
   const storage = new MemoryStorage()
@@ -88,6 +89,13 @@ async function main(): Promise<void> {
   
   // 执行清理并退出
   await stop()
+  
+  // 计算总执行时间
+  const endTime = Date.now()
+  const totalTime = endTime - startTime
+  const seconds = (totalTime / 1000).toFixed(2)
+  log.info(`脚本总执行时间: ${totalTime}ms (${seconds}s)`)
+  
   process.exit(0)
 }
 
